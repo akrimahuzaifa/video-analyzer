@@ -54,8 +54,20 @@ video-analyzer analyze ./demo.mp4 --fast
 
 Run `video-analyzer analyze --help` for all options (see also [SPECIFICATIONS.md](./docs/SPECIFICATIONS.md#22-cli-options--flags)).
 
-**GPU:** Whisper uses CUDA automatically when available and falls back to CPU (int8) if the CUDA 12
-cuBLAS/cuDNN libraries are missing, so a run never fails because of the GPU setup.
+### GPU acceleration (NVIDIA)
+
+Whisper uses CUDA automatically when available and falls back to CPU (int8) otherwise, so a run never
+fails because of the GPU setup. To enable the GPU, install the CUDA 12 libraries from PyPI (no CUDA
+Toolkit install needed):
+
+```bash
+pip install -e ".[gpu]"
+python -c "from video_analyzer.engines import asr; print(asr.resolve_compute(asr.Device.auto))"
+# ('cuda', 'float16') means the GPU will be used
+```
+
+On Linux you also need to set `LD_LIBRARY_PATH`. See [GPU Setup](./docs/GPU_SETUP.md) for details and
+troubleshooting.
 
 **YouTube "confirm you're not a bot":** YouTube sometimes blocks downloads, especially from VPNs and
 shared IPs. Re-run with `--cookies-from-browser firefox` (or `chrome`, `edge`) or `--cookies cookies.txt`.
@@ -91,6 +103,7 @@ Detailed architectural and developer specifications are available in the [`docs/
 - [System Architecture](./docs/ARCHITECTURE.md)
 - [Technical Specifications](./docs/SPECIFICATIONS.md)
 - [Component Topology & Graphify](./docs/GRAPHIFY.md)
+- [GPU Setup (NVIDIA CUDA)](./docs/GPU_SETUP.md)
 - [AI Agent Bootstrap Prompt](./docs/AGENT_BOOTSTRAP_PROMPT.md)
 
 ---

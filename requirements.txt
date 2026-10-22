@@ -10,3 +10,6 @@ jinja2>=3.1.0
 pydantic>=2.5.0
 # Optional on-screen text extraction (pulls in PyTorch, large download):
 # easyocr>=1.7.0
+# Optional GPU transcription, CUDA 12 libraries (see docs/GPU_SETUP.md):
+# nvidia-cublas-cu12>=12.4,<13
+# nvidia-cudnn-cu12>=9,<10   # Linux only; bundled with ctranslate2 on Windows

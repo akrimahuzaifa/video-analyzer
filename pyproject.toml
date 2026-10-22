@@ -32,6 +32,12 @@ dependencies = [
 
 [project.optional-dependencies]
 ocr = ["easyocr>=1.7.0"]
+# CUDA 12 libraries for GPU transcription (see docs/GPU_SETUP.md). The Windows ctranslate2
+# wheel already bundles cuDNN 9; Linux needs it separately.
+gpu = [
+    "nvidia-cublas-cu12>=12.4,<13",
+    "nvidia-cudnn-cu12>=9,<10; sys_platform == 'linux'",
+]
 dev = ["pytest>=8.0", "ruff>=0.5"]
 
 [project.scripts]

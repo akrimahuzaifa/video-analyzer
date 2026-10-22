@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import math
+import os
 import wave
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -37,7 +38,36 @@ class TranscriptionResult:
     duration: float
 
 
+_cuda_dirs_registered = False
+
+
+def register_cuda_libraries() -> list[Path]:
+    """Make pip-installed CUDA libraries (the `[gpu]` extra) loadable on Windows.
+
+    The nvidia-* wheels put their DLLs in site-packages/nvidia/<lib>/bin, which Windows does not
+    search. CTranslate2 loads cuBLAS lazily, so adding these folders before the first transcription
+    is enough. On Linux the loader reads LD_LIBRARY_PATH only at process start, so it has to be set
+    in the shell instead (see docs/GPU_SETUP.md).
+    """
+    global _cuda_dirs_registered
+    if _cuda_dirs_registered or os.name != "nt":
+        return []
+    _cuda_dirs_registered = True
+    try:
+        import nvidia  # namespace package created by the nvidia-* wheels
+    except ImportError:
+        return []
+
+    dirs = [d for root in nvidia.__path__ for d in Path(root).glob("*/bin") if d.is_dir()]
+    for directory in dirs:
+        os.add_dll_directory(str(directory))
+    # LoadLibrary calls without LOAD_LIBRARY_SEARCH_* flags only look at PATH.
+    os.environ["PATH"] = os.pathsep.join([*map(str, dirs), os.environ.get("PATH", "")])
+    return dirs
+
+
 def _cuda_available() -> bool:
+    register_cuda_libraries()
     try:
         import ctranslate2
 
@@ -84,6 +114,8 @@ def _transcribe_on(
 ) -> TranscriptionResult:
     from faster_whisper import WhisperModel
 
+    if target == "cuda":
+        register_cuda_libraries()
     model = WhisperModel(model_size, device=target, compute_type=compute_type)
     raw_segments, info = model.transcribe(
         load_wav(audio_path),
