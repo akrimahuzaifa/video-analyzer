@@ -48,9 +48,19 @@ video-analyzer analyze "https://youtu.be/WoFCSwxMLKA"
 # Bigger Whisper model, forced language, custom output folder
 video-analyzer analyze ./demo.mp4 --model small --language ur -o ./output/demo
 
+# Read on-screen text (OCR) from every keyframe: field labels, values, URLs, buttons
+# One-time setup: pip install -e ".[ocr]"
+video-analyzer analyze ./recordings/billing_demo.mp4 --ocr
+
 # Quick mode: transcript/captions + keyframes, no OCR
 video-analyzer analyze ./demo.mp4 --fast
 ```
+
+OCR runs automatically whenever the `[ocr]` extra is installed; `--ocr` just makes it explicit and
+`--no-ocr` turns it off. Without the extra, the run prints `OCR skipped` and continues. For screen
+recordings, most of the facts an agent needs (portal names, IDs, field values) are on screen, so
+OCR is strongly recommended. It uses the GPU when Whisper does, provided PyTorch was installed with
+CUDA support (see [GPU Setup](./docs/GPU_SETUP.md)).
 
 Run `video-analyzer analyze --help` for all options (see also [SPECIFICATIONS.md](./docs/SPECIFICATIONS.md#22-cli-options--flags)).
 
