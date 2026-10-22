@@ -1,0 +1,38 @@
+# Summary: {{ result.video_title }}
+
+| | |
+| :--- | :--- |
+| Source | {{ result.source | cell }} |
+| Duration | {{ result.duration_seconds | ts }} |
+| Language | {{ result.detected_language or "unknown" }} |
+| Transcript | {{ result.transcript_source }} ({{ result.transcript | length }} segments) |
+| Screens captured | {{ result.keyframes | length }} keyframes |
+
+## What is this video about?
+{{ context.goal }}
+
+## Systems involved
+{% for app in context.applications %}
+- {{ app }}
+{% else %}
+- None detected on screen or in narration.
+{% endfor %}
+
+## People and roles mentioned
+{{ context.roles | join(", ") if context.roles else "None mentioned." }}
+
+## Outline
+{% for step in result.action_steps %}
+{{ step.step_number }}. **{{ step.start_time | ts }}**: {{ step.action_title }}
+{% else %}
+No steps detected.
+{% endfor %}
+
+## Key rules and conditions
+{% for rule in context.business_rules[:5] %}
+- {{ rule }}
+{% else %}
+- None detected.
+{% endfor %}
+
+_See `agent.md` for the detailed, step-by-step brief._

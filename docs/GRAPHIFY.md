@@ -32,7 +32,7 @@ graph TD
         end
 
         subgraph VisionPipeline [Vision & Screen Extraction]
-            KeyframeDetector[engines/scene_detector.py: pHash / SSIM]
+            KeyframeDetector[engines/vision.py: changed-area score + pHash]
             OCREngine[engines/ocr_extractor.py: PaddleOCR / EasyOCR]
             KeyframeDetector --> OCREngine
         end

@@ -1,0 +1,54 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "video-analyzer"
+version = "0.1.0"
+description = "Local-first engine that turns screen recordings and YouTube videos into token-efficient agent.md briefs."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [{ name = "Akrima Huzaifa Akhtar" }]
+keywords = ["video", "whisper", "transcription", "keyframes", "ai-agents", "llm"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+]
+dependencies = [
+    "faster-whisper>=1.0.0",
+    "imageio-ffmpeg>=0.5.0",
+    "yt-dlp>=2024.0.0",
+    "youtube-transcript-api>=1.0.0",
+    "opencv-python>=4.9.0",
+    "numpy>=1.24",
+    "typer>=0.9.0",
+    "rich>=13.0.0",
+    "jinja2>=3.1.0",
+    "pydantic>=2.5.0",
+]
+
+[project.optional-dependencies]
+ocr = ["easyocr>=1.7.0"]
+dev = ["pytest>=8.0", "ruff>=0.5"]
+
+[project.scripts]
+video-analyzer = "video_analyzer.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["video_analyzer"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["typer.Argument", "typer.Option"]

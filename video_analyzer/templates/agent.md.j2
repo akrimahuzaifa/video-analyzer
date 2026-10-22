@@ -1,0 +1,64 @@
+# Agent Execution Brief: {{ result.video_title }}
+
+> Generated locally by video-analyzer {{ version }} from `{{ result.source }}`.
+> Duration {{ result.duration_seconds | ts }} · language: {{ result.detected_language or "unknown" }} · transcript: {{ result.transcript_source }} · {{ result.action_steps | length }} steps · {{ result.keyframes | length }} keyframes.
+> Spoken text per step is shortened; the full transcript is in `transcript.txt`.
+
+## 1. System & Process Context
+- **Primary Goal:** {{ context.goal }}
+- **Target Applications / Portals:** {{ context.applications | join(", ") if context.applications else "None detected" }}
+- **User Roles:** {{ context.roles | join(", ") if context.roles else "None mentioned" }}
+
+## 2. Chronological Action Breakdown
+{% for step in result.action_steps %}
+
+### Step {{ step.step_number }}: {{ step.action_title }} ({{ step.start_time | ts }} - {{ step.end_time | ts }})
+{% if step.visual_state and step.visual_state.ocr_elements %}
+- **Source Screen:** {{ step.visual_state.ocr_elements[:3] | join(" · ") }}
+{% endif %}
+- **Observed UI Action:** {{ step.observed_action or "Not stated" }}
+- **Spoken Instructions (Voiceover):** {{ ('"' ~ step.spoken_context ~ '"') if step.spoken_context else "(no narration)" }}
+{% if step.extracted_fields %}
+- **Inputs & Fields:**
+
+  | Field Label | Example Value from Video |
+  | :--- | :--- |
+{% for label, value in step.extracted_fields.items() %}
+  | {{ label | cell }} | {{ value | cell }} |
+{% endfor %}
+
+{% endif %}
+{% if step.visual_state and step.visual_state.ocr_elements %}
+- **On-screen Text:** {{ step.visual_state.ocr_elements | join(" · ") | truncate(400) }}
+{% endif %}
+{% if step.visual_state %}
+- **Keyframe Reference:** ![Step {{ step.step_number }}](./{{ step.visual_state.file_path }})
+{% endif %}
+{% else %}
+
+_No steps detected (the video had no speech and no distinct screens)._
+{% endfor %}
+
+## 3. Business Logic, Formulas & Decision Trees
+{% for rule in context.business_rules %}
+- {{ rule }}
+{% else %}
+- No explicit rules, formulas or conditions were detected in the narration.
+{% endfor %}
+
+## 4. Recommended Automation Implementation Prompt
+
+```text
+You are automating the workflow shown in the video "{{ result.video_title }}".
+Read agent.md for the step-by-step breakdown and open the referenced keyframes for exact screen
+layouts. Goal: {{ context.goal }}
+{% if context.applications %}
+Systems involved: {{ context.applications | join(", ") }}.
+{% endif %}
+Implement each step in order:
+{% for step in result.action_steps %}
+  {{ step.step_number }}. [{{ step.start_time | ts }}] {{ step.observed_action or "Step" }}: {{ step.action_title }}
+{% endfor %}
+Respect the business rules in section 3. Ask for credentials and environment URLs instead of
+hard-coding them, and flag any step whose intent is ambiguous before implementing it.
+```

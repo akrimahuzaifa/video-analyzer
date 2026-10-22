@@ -30,8 +30,12 @@
 ```bash
 git clone https://github.com/your-username/video-analyzer.git
 cd video-analyzer
-pip install -r requirements.txt
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -e .              # core: Whisper ASR, keyframes, YouTube
+pip install -e ".[ocr]"       # optional: on-screen text via EasyOCR (pulls in PyTorch)
 ```
+
+No system ffmpeg is needed: the `imageio-ffmpeg` package ships its own binary.
 
 ### Usage
 ```bash
@@ -40,6 +44,28 @@ video-analyzer analyze ./recordings/billing_demo.mp4
 
 # Analyze a YouTube video
 video-analyzer analyze "https://youtu.be/WoFCSwxMLKA"
+
+# Bigger Whisper model, forced language, custom output folder
+video-analyzer analyze ./demo.mp4 --model small --language ur -o ./output/demo
+
+# Quick mode: transcript/captions + keyframes, no OCR
+video-analyzer analyze ./demo.mp4 --fast
+```
+
+Run `video-analyzer analyze --help` for all options (see also [SPECIFICATIONS.md](./docs/SPECIFICATIONS.md#22-cli-options--flags)).
+
+**GPU:** Whisper uses CUDA automatically when available and falls back to CPU (int8) if the CUDA 12
+cuBLAS/cuDNN libraries are missing, so a run never fails because of the GPU setup.
+
+**YouTube "confirm you're not a bot":** YouTube sometimes blocks downloads, especially from VPNs and
+shared IPs. Re-run with `--cookies-from-browser firefox` (or `chrome`, `edge`) or `--cookies cookies.txt`.
+If captions could still be fetched, the brief is built from them without keyframes.
+
+### Development
+```bash
+pip install -e ".[dev]"
+pytest          # unit + end-to-end tests on a generated video; no network or model download
+ruff check . && ruff format --check .
 ```
 
 ---
